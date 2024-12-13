@@ -6,7 +6,7 @@ import RequestsTab from "../Tabs/RequestsTab";
 import BorrowedBooksTab from "../Tabs/BorrowedBooksTab";
 import HistoryTab from "../Tabs/HistoryTab";
 
-function LibrarianLayout() {
+function LibrarianLayout({ onLogout }) {
   const [activeTab, setActiveTab] = useState("Inventory");
 
   const renderTabContent = () => {
@@ -26,7 +26,7 @@ function LibrarianLayout() {
 
   return (
     <div>
-      <Navbar role="Librarian" />
+      <Navbar role="Librarian" onLogout={onLogout} />
       <div className="dashboard">
         <Sidebar
           tabs={["Inventory", "Requests", "Borrowed Books", "History"]}

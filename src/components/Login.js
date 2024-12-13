@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function Login({ onLogin }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -14,8 +16,10 @@ function Login({ onLogin }) {
         { username, password }
       );
       const { token, role } = response.data;
-      localStorage.setItem("token", token);
-      onLogin(role); // Pass the role to the parent component
+      localStorage.setItem("token", token); // Store JWT token
+      localStorage.setItem("role", role); // Store role for persistent login
+      onLogin(role);
+      navigate(`/${role.toLowerCase()}-dashboard`); // Redirect to the appropriate dashboard
     } catch (err) {
       setError("Invalid username or password");
     }

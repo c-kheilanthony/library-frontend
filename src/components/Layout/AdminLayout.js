@@ -4,7 +4,7 @@ import Navbar from "../Shared/Navbar";
 import AccountsManagerTab from "../Tabs/AccountsManagerTab";
 import HistoryTab from "../Tabs/HistoryTab";
 
-function AdminLayout() {
+function AdminLayout({ onLogout }) {
   const [activeTab, setActiveTab] = useState("Accounts Manager");
 
   const renderTabContent = () => {
@@ -20,7 +20,7 @@ function AdminLayout() {
 
   return (
     <div>
-      <Navbar role="Admin" />
+      <Navbar role="Admin" onLogout={onLogout} />
       <div className="dashboard">
         <Sidebar
           tabs={["Accounts Manager", "Log History"]}
