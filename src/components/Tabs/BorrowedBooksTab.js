@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
-import Table from "../Shared/Table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TableCaption,
+  TableHeader,
+} from "../ui/table";
 
 function BorrowedBooksTab() {
   const [borrowedBooks, setBorrowedBooks] = useState([]);
@@ -12,19 +20,42 @@ function BorrowedBooksTab() {
       .catch((error) => console.error("Error fetching borrowed books:", error));
   }, []);
 
-  const columns = ["Book Title", "Borrowed By", "Due Date"];
-
   return (
-    <div>
-      <h2>Borrowed Books</h2>
-      <Table
-        columns={columns}
-        data={borrowedBooks.map((borrowed) => ({
-          "Book Title": borrowed.bookTitle,
-          "Borrowed By": borrowed.borrowedBy,
-          "Due Date": borrowed.dueDate,
-        }))}
-      />
+    <div className="p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold text-header mb-6">Borrowed Books</h2>
+      <Table className="w-full border border-border bg-white/60 backdrop-blur-sm rounded-lg shadow">
+        <TableCaption className="text-sm text-gray-500">
+          List of currently borrowed books.
+        </TableCaption>
+        <TableHeader>
+          <TableRow className="bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to text-white">
+            <TableHead className="font-semibold text-left py-2 px-3 border-b">
+              Book Title
+            </TableHead>
+            <TableHead className="font-semibold text-left py-2 px-3 border-b">
+              Borrowed By
+            </TableHead>
+            <TableHead className="font-semibold text-left py-2 px-3 border-b">
+              Due Date
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {borrowedBooks.map((borrowed) => (
+            <TableRow key={borrowed.id} className="hover:bg-purple-50">
+              <TableCell className="py-2 px-3 border-b">
+                {borrowed.bookTitle}
+              </TableCell>
+              <TableCell className="py-2 px-3 border-b">
+                {borrowed.borrowedBy}
+              </TableCell>
+              <TableCell className="py-2 px-3 border-b">
+                {new Date(borrowed.dueDate).toLocaleDateString()}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }
