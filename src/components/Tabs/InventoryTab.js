@@ -6,10 +6,18 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  TableCaption,
   TableHeader,
 } from "../ui/table";
 import { Badge } from "../ui/badge";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "../ui/pagination";
 import {
   Card,
   CardContent,
@@ -23,6 +31,8 @@ function InventoryTab() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedBook, setSelectedBook] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 10;
 
   useEffect(() => {
     const fetchInventory = async () => {
@@ -45,15 +55,24 @@ function InventoryTab() {
     return <p className="text-center text-gray-600">Loading inventory...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
+  // Pagination Logic
+  const totalRows = inventory.length;
+  const totalPages = Math.ceil(totalRows / rowsPerPage);
+  const currentData = inventory.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
   return (
     <div className="p-6 bg-white rounded-lg shadow-md flex">
       {/* Left: Table */}
       <div className="w-2/3 pr-4">
         <h1 className="text-3xl font-bold mb-6 text-header">Inventory</h1>
         <Table className="w-full border border-border bg-white/60 backdrop-blur-sm rounded-lg shadow">
-          <TableCaption className="text-sm text-gray-500">
-            A list of books available in the library.
-          </TableCaption>
           <TableHeader>
             <TableRow className="bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to text-white">
               <TableHead className="font-semibold text-black text-left py-2 px-3 border-b w-[8%]">
@@ -80,14 +99,14 @@ function InventoryTab() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {inventory.map((item) => (
+            {currentData.map((item) => (
               <TableRow
                 key={item._id}
                 className="hover:bg-purple-50 cursor-pointer"
                 onClick={() => setSelectedBook(item)}
               >
                 <TableCell className="py-2 px-3 border-b truncate">
-                  {item._id}
+                  {item._id.slice(0, 8)}...
                 </TableCell>
                 <TableCell className="py-2 px-3 border-b">
                   {item.category.map((cat) => (
@@ -103,7 +122,7 @@ function InventoryTab() {
                   {item.author}
                 </TableCell>
                 <TableCell className="py-2 px-3 border-b">
-                  {new Date(item.datePublished).toLocaleDateString()}
+                  {new Date(item.datePublished).toISOString().split("T")[0]}
                 </TableCell>
                 <TableCell className="py-2 px-3 border-b">
                   {item.isbn}
@@ -115,6 +134,43 @@ function InventoryTab() {
             ))}
           </TableBody>
         </Table>
+
+        {/* Pagination */}
+        <Pagination className="mt-4">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() =>
+                  currentPage > 1 && handlePageChange(currentPage - 1)
+                }
+                disabled={currentPage === 1}
+              />
+            </PaginationItem>
+            {Array.from({ length: totalPages }, (_, index) => (
+              <PaginationItem key={index}>
+                <PaginationLink
+                  onClick={() => handlePageChange(index + 1)}
+                  isActive={currentPage === index + 1}
+                  className={`py-2 px-3 rounded ${
+                    currentPage === index + 1
+                      ? "bg-purple-200 text-primary"
+                      : "hover:bg-purple-100 hover:text-primary transition"
+                  }`}
+                >
+                  {index + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext
+                onClick={() =>
+                  currentPage < totalPages && handlePageChange(currentPage + 1)
+                }
+                disabled={currentPage === totalPages}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
 
       {/* Right: Book Details Panel */}
@@ -151,7 +207,11 @@ function InventoryTab() {
                   Date Published
                 </span>
                 <span className="text-base text-gray-800">
-                  {new Date(selectedBook.datePublished).toLocaleDateString()}
+                  {
+                    new Date(selectedBook.datePublished)
+                      .toISOString()
+                      .split("T")[0]
+                  }
                 </span>
               </div>
 

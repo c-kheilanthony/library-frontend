@@ -23,7 +23,7 @@ function LibrarianLayout({ onLogout }) {
   return (
     <div className="min-h-screen bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to text-foreground flex flex-col">
       {/* Header */}
-      <header className="border-b border-border bg-white/70 backdrop-blur-sm px-6 py-4 flex justify-between items-center shadow-md">
+      <header className="border-b px-28 border-border bg-white/70 backdrop-blur-sm px-6 py-4 flex justify-between items-center shadow-md">
         <h1 className="text-3xl font-bold text-header">Librarian Dashboard</h1>
         <Button
           variant="destructive"
@@ -36,77 +36,56 @@ function LibrarianLayout({ onLogout }) {
 
       {/* Main Content Area */}
       <main className="container mx-auto py-6 px-4 flex-grow">
-        <Tabs
-          defaultValue={activeTab}
-          onValueChange={setActiveTab}
-          className="w-full space-y-6"
-        >
-          <TabsList className="w-full h-full grid grid-cols-3 bg-white/60 backdrop-blur-sm shadow-md rounded-lg">
-            <TabsTrigger
-              value="inventory"
-              className="data-[state=active]:bg-purple-200 data-[state=active]:text-primary hover:bg-purple-100 text-center py-2 px-4 rounded transition"
+        <Card className="shadow-lg border border-border bg-white/60 backdrop-blur-sm rounded-lg">
+          {/* Tabs as part of the card */}
+          <CardHeader>
+            <CardTitle className="text-header">Manage Library</CardTitle>
+            <CardDescription className="text-text-primary">
+              Access and manage your library’s inventory, requests, and borrowed
+              books.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs
+              defaultValue={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
             >
-              Inventory
-            </TabsTrigger>
-            <TabsTrigger
-              value="requests"
-              className="data-[state=active]:bg-purple-200 data-[state=active]:text-primary hover:bg-purple-100 text-center py-2 px-4 rounded transition"
-            >
-              Requests
-            </TabsTrigger>
-            <TabsTrigger
-              value="borrowed"
-              className="data-[state=active]:bg-purple-200 data-[state=active]:text-primary hover:bg-purple-100 text-center py-2 px-4 rounded transition"
-            >
-              Borrowed Books
-            </TabsTrigger>
-          </TabsList>
+              {/* Tabs List */}
+              <TabsList className="w-full h-full grid grid-cols-3 bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to rounded-lg mb-4">
+                <TabsTrigger
+                  value="inventory"
+                  className="data-[state=active]:bg-purple-200 data-[state=active]:text-primary hover:bg-purple-100 text-center py-2 px-4 rounded transition"
+                >
+                  Inventory
+                </TabsTrigger>
+                <TabsTrigger
+                  value="requests"
+                  className="data-[state=active]:bg-purple-200 data-[state=active]:text-primary hover:bg-purple-100 text-center py-2 px-4 rounded transition"
+                >
+                  Requests
+                </TabsTrigger>
+                <TabsTrigger
+                  value="borrowed"
+                  className="data-[state=active]:bg-purple-200 data-[state=active]:text-primary hover:bg-purple-100 text-center py-2 px-4 rounded transition"
+                >
+                  Borrowed Books
+                </TabsTrigger>
+              </TabsList>
 
-          {/* Inventory Tab */}
-          <TabsContent value="inventory">
-            <Card className="overflow-x-auto shadow-lg border border-border">
-              <CardHeader>
-                <CardTitle className="text-header">Inventory</CardTitle>
-                <CardDescription className="text-text-primary">
-                  View and manage your library’s book inventory.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+              {/* Tabs Content */}
+              <TabsContent value="inventory">
                 <InventoryTab />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Requests Tab */}
-          <TabsContent value="requests">
-            <Card className="overflow-x-auto shadow-lg border border-border">
-              <CardHeader>
-                <CardTitle className="text-header">Requests</CardTitle>
-                <CardDescription className="text-text-primary">
-                  Review and approve or deny incoming requests.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+              </TabsContent>
+              <TabsContent value="requests">
                 <RequestsTab />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Borrowed Books Tab */}
-          <TabsContent value="borrowed">
-            <Card className="overflow-x-auto shadow-lg border border-border">
-              <CardHeader>
-                <CardTitle className="text-header">Borrowed Books</CardTitle>
-                <CardDescription className="text-text-primary">
-                  Track currently borrowed books and manage returns.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+              </TabsContent>
+              <TabsContent value="borrowed">
                 <BorrowedBooksTab />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
       </main>
     </div>
   );

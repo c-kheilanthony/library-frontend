@@ -24,7 +24,7 @@ function StudentLayout({ onLogout }) {
   return (
     <div className="min-h-screen bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to text-foreground flex flex-col">
       {/* Header */}
-      <header className="border-b border-border bg-white/70 backdrop-blur-sm px-6 py-4 flex justify-between items-center shadow-md">
+      <header className="border-b px-28 border-border bg-white/70 backdrop-blur-sm px-6 py-4 flex justify-between items-center shadow-md">
         <h1 className="text-3xl font-bold text-header">Student Dashboard</h1>
         <Button
           variant="destructive"
@@ -42,7 +42,7 @@ function StudentLayout({ onLogout }) {
           onValueChange={setActiveTab}
           className="w-full space-y-6"
         >
-          <TabsList className="w-full grid grid-cols-4 bg-white/60 backdrop-blur-sm shadow-md rounded-lg">
+          <TabsList className="w-full h-full grid grid-cols-4 bg-white/60 backdrop-blur-sm shadow-md rounded-lg">
             <TabsTrigger
               value="collections"
               className="data-[state=active]:bg-purple-200 data-[state=active]:text-primary hover:bg-purple-100 text-center py-2 px-4 rounded transition"
