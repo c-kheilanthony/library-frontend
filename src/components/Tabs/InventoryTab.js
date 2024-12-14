@@ -12,7 +12,6 @@ import { Badge } from "../ui/badge";
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -68,177 +67,182 @@ function InventoryTab() {
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md flex">
-      {/* Left: Table */}
-      <div className="w-2/3 pr-4">
-        <h1 className="text-3xl font-bold mb-6 text-header">Inventory</h1>
-        <Table className="w-full border border-border bg-white/60 backdrop-blur-sm rounded-lg shadow">
-          <TableHeader>
-            <TableRow className="bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to text-white">
-              <TableHead className="font-semibold text-black text-left py-2 px-3 border-b w-[8%]">
-                ID
-              </TableHead>
-              <TableHead className="font-semibold text-black text-left py-2 px-3 border-b w-[12%]">
-                Category
-              </TableHead>
-              <TableHead className="font-semibold text-black text-left py-2 px-3 border-b w-[20%]">
-                Title
-              </TableHead>
-              <TableHead className="font-semibold text-black text-left py-2 px-3 border-b w-[15%]">
-                Author
-              </TableHead>
-              <TableHead className="font-semibold text-black text-left py-2 px-3 border-b w-[15%]">
-                Date Published
-              </TableHead>
-              <TableHead className="font-semibold text-black text-left py-2 px-3 border-b w-[15%]">
-                ISBN
-              </TableHead>
-              <TableHead className="font-semibold text-black text-left py-2 px-3 border-b w-[15%]">
-                Copy Identifier
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {currentData.map((item) => (
-              <TableRow
-                key={item._id}
-                className="hover:bg-purple-50 cursor-pointer"
-                onClick={() => setSelectedBook(item)}
-              >
-                <TableCell className="py-2 px-3 border-b truncate">
-                  {item._id.slice(0, 8)}...
-                </TableCell>
-                <TableCell className="py-2 px-3 border-b">
-                  {item.category.map((cat) => (
-                    <Badge key={cat} variant="secondary" className="mr-1">
-                      {cat}
-                    </Badge>
-                  ))}
-                </TableCell>
-                <TableCell className="py-2 px-3 border-b">
-                  {item.title}
-                </TableCell>
-                <TableCell className="py-2 px-3 border-b">
-                  {item.author}
-                </TableCell>
-                <TableCell className="py-2 px-3 border-b">
-                  {new Date(item.datePublished).toISOString().split("T")[0]}
-                </TableCell>
-                <TableCell className="py-2 px-3 border-b">
-                  {item.isbn}
-                </TableCell>
-                <TableCell className="py-2 px-3 border-b">
-                  {item.copyIdentifier}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-
-        {/* Pagination */}
-        <Pagination className="mt-4">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() =>
-                  currentPage > 1 && handlePageChange(currentPage - 1)
-                }
-                disabled={currentPage === 1}
-              />
-            </PaginationItem>
-            {Array.from({ length: totalPages }, (_, index) => (
-              <PaginationItem key={index}>
-                <PaginationLink
-                  onClick={() => handlePageChange(index + 1)}
-                  isActive={currentPage === index + 1}
-                  className={`py-2 px-3 rounded ${
-                    currentPage === index + 1
-                      ? "bg-purple-200 text-primary"
-                      : "hover:bg-purple-100 hover:text-primary transition"
-                  }`}
-                >
-                  {index + 1}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            <PaginationItem>
-              <PaginationNext
-                onClick={() =>
-                  currentPage < totalPages && handlePageChange(currentPage + 1)
-                }
-                disabled={currentPage === totalPages}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
-
-      {/* Right: Book Details Panel */}
-      <div className="w-1/3 pl-4">
-        {selectedBook ? (
-          <Card className="border border-border shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-header">
-                {selectedBook.title}
-              </CardTitle>
-              <CardDescription className="text-sm text-text-primary">
-                {selectedBook.author}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Cover Image Placeholder */}
-              <div className="w-full h-48 bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to text-gray-700 flex items-center justify-center rounded-lg">
-                Cover Image Placeholder
-              </div>
-
-              {/* Category */}
-              <div className="flex flex-col">
-                <span className="text-sm font-medium text-gray-500">
+    <div className="p-6 bg-white rounded-lg shadow-md flex flex-col">
+      <h1 className="text-3xl font-bold mb-6 text-header">Inventory</h1>
+      <div className="flex flex-row items-start gap-4">
+        {/* Left: Table */}
+        <div className="w-2/3">
+          <Table className="w-full border border-border bg-white/60 backdrop-blur-sm rounded-lg shadow">
+            <TableHeader>
+              <TableRow className="bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to text-white">
+                <TableHead className="font-semibold text-black text-left py-2 px-3 border-b w-[8%]">
+                  ID
+                </TableHead>
+                <TableHead className="font-semibold text-black text-left py-2 px-3 border-b w-[12%]">
                   Category
-                </span>
-                <span className="text-base text-gray-800">
-                  {selectedBook.category.join(", ")}
-                </span>
-              </div>
-
-              {/* Date Published */}
-              <div className="flex flex-col">
-                <span className="text-sm font-medium text-gray-500">
+                </TableHead>
+                <TableHead className="font-semibold text-black text-left py-2 px-3 border-b w-[20%]">
+                  Title
+                </TableHead>
+                <TableHead className="font-semibold text-black text-left py-2 px-3 border-b w-[15%]">
+                  Author
+                </TableHead>
+                <TableHead className="font-semibold text-black text-left py-2 px-3 border-b w-[15%]">
                   Date Published
-                </span>
-                <span className="text-base text-gray-800">
-                  {
-                    new Date(selectedBook.datePublished)
-                      .toISOString()
-                      .split("T")[0]
-                  }
-                </span>
-              </div>
-
-              {/* ISBN */}
-              <div className="flex flex-col">
-                <span className="text-sm font-medium text-gray-500">ISBN</span>
-                <span className="text-base text-gray-800">
-                  {selectedBook.isbn}
-                </span>
-              </div>
-
-              {/* Copy Identifier */}
-              <div className="flex flex-col">
-                <span className="text-sm font-medium text-gray-500">
+                </TableHead>
+                <TableHead className="font-semibold text-black text-left py-2 px-3 border-b w-[15%]">
+                  ISBN
+                </TableHead>
+                <TableHead className="font-semibold text-black text-left py-2 px-3 border-b w-[15%]">
                   Copy Identifier
-                </span>
-                <span className="text-base text-gray-800">
-                  {selectedBook.copyIdentifier}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="text-gray-500 italic">
-            Select a book to view details
-          </div>
-        )}
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {currentData.map((item) => (
+                <TableRow
+                  key={item._id}
+                  className="hover:bg-purple-50 cursor-pointer"
+                  onClick={() => setSelectedBook(item)}
+                >
+                  <TableCell className="py-2 px-3 border-b truncate">
+                    {item._id.slice(0, 8)}
+                  </TableCell>
+                  <TableCell className="py-2 px-3 border-b">
+                    {item.category.map((cat) => (
+                      <Badge key={cat} variant="secondary" className="mr-1">
+                        {cat}
+                      </Badge>
+                    ))}
+                  </TableCell>
+                  <TableCell className="py-2 px-3 border-b">
+                    {item.title}
+                  </TableCell>
+                  <TableCell className="py-2 px-3 border-b">
+                    {item.author}
+                  </TableCell>
+                  <TableCell className="py-2 px-3 border-b">
+                    {new Date(item.datePublished).toISOString().split("T")[0]}
+                  </TableCell>
+                  <TableCell className="py-2 px-3 border-b">
+                    {item.isbn}
+                  </TableCell>
+                  <TableCell className="py-2 px-3 border-b">
+                    {item.copyIdentifier}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          {/* Pagination */}
+          <Pagination className="mt-4">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() =>
+                    currentPage > 1 && handlePageChange(currentPage - 1)
+                  }
+                  disabled={currentPage === 1}
+                />
+              </PaginationItem>
+              {Array.from({ length: totalPages }, (_, index) => (
+                <PaginationItem key={index}>
+                  <PaginationLink
+                    onClick={() => handlePageChange(index + 1)}
+                    isActive={currentPage === index + 1}
+                    className={`py-2 px-3 rounded ${
+                      currentPage === index + 1
+                        ? "bg-purple-200 text-primary"
+                        : "hover:bg-purple-100 hover:text-primary transition"
+                    }`}
+                  >
+                    {index + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() =>
+                    currentPage < totalPages &&
+                    handlePageChange(currentPage + 1)
+                  }
+                  disabled={currentPage === totalPages}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+
+        {/* Right: Book Details Panel */}
+        <div className="w-1/3 flex flex-col items-center">
+          {selectedBook ? (
+            <Card className="w-full border border-border shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-header">
+                  {selectedBook.title}
+                </CardTitle>
+                <CardDescription className="text-sm text-text-primary">
+                  {selectedBook.author}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Cover Image Placeholder */}
+                <div className="w-full h-96 bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to text-gray-700 flex items-center justify-center rounded-lg">
+                  Cover Image Placeholder
+                </div>
+
+                {/* Category */}
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-gray-500">
+                    Category
+                  </span>
+                  <span className="text-base text-gray-800">
+                    {selectedBook.category.join(", ")}
+                  </span>
+                </div>
+
+                {/* Date Published */}
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-gray-500">
+                    Date Published
+                  </span>
+                  <span className="text-base text-gray-800">
+                    {
+                      new Date(selectedBook.datePublished)
+                        .toISOString()
+                        .split("T")[0]
+                    }
+                  </span>
+                </div>
+
+                {/* ISBN */}
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-gray-500">
+                    ISBN
+                  </span>
+                  <span className="text-base text-gray-800">
+                    {selectedBook.isbn}
+                  </span>
+                </div>
+
+                {/* Copy Identifier */}
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-gray-500">
+                    Copy Identifier
+                  </span>
+                  <span className="text-base text-gray-800">
+                    {selectedBook.copyIdentifier}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="text-gray-500 italic text-center">
+              Select a book to view details
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
