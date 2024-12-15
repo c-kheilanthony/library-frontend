@@ -9,6 +9,7 @@ import {
   TableHeader,
 } from "../ui/table";
 import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import {
   Pagination,
   PaginationContent,
@@ -25,11 +26,13 @@ import {
   CardDescription,
 } from "../ui/card";
 
-function InventoryTab() {
+function InventoryTab({ role }) {
+  console.log("Role in InventoryTab:", role);
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedBook, setSelectedBook] = useState(null);
+  const [isAdding, setIsAdding] = useState(false); // Tracks add/edit state
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
 
@@ -50,9 +53,14 @@ function InventoryTab() {
     fetchInventory();
   }, []);
 
-  if (loading)
-    return <p className="text-center text-gray-600">Loading inventory...</p>;
-  if (error) return <p className="text-center text-red-500">{error}</p>;
+  const handleToggleAddMode = () => {
+    setSelectedBook(null); // Clear selected book
+    setIsAdding((prev) => !prev); // Toggle add mode
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
   // Pagination Logic
   const totalRows = inventory.length;
@@ -62,13 +70,26 @@ function InventoryTab() {
     currentPage * rowsPerPage
   );
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+  if (loading)
+    return <p className="text-center text-gray-600">Loading inventory...</p>;
+  if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md flex flex-col">
-      <h1 className="text-3xl font-bold mb-6 text-header">Inventory</h1>
+      {/* Header with Add Button */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-header">Inventory</h1>
+        {role === "Librarian" && (
+          <Button
+            variant="secondary"
+            onClick={handleToggleAddMode}
+            className="hover:bg-purple-100 transition"
+          >
+            {isAdding ? "Cancel" : "Add Book"}
+          </Button>
+        )}
+      </div>
+
       <div className="flex flex-row items-start gap-4">
         {/* Left: Table */}
         <div className="w-2/3">
@@ -103,10 +124,15 @@ function InventoryTab() {
                 <TableRow
                   key={item._id}
                   className="hover:bg-purple-50 cursor-pointer"
-                  onClick={() => setSelectedBook(item)}
+                  onClick={() => {
+                    setSelectedBook(item); // Allow selecting books for all roles
+                    if (role === "Librarian") {
+                      setIsAdding(false); // Exit add mode if librarian selects a book
+                    }
+                  }}
                 >
                   <TableCell className="py-2 px-3 border-b truncate">
-                    {item._id.slice(0, 8)}
+                    {item._id.slice(0, 8)}...
                   </TableCell>
                   <TableCell className="py-2 px-3 border-b">
                     {item.category.map((cat) => (
@@ -176,72 +202,118 @@ function InventoryTab() {
 
         {/* Right: Book Details Panel */}
         <div className="w-1/3 flex flex-col items-center">
-          {selectedBook ? (
-            <Card className="w-full border border-border shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-header">
-                  {selectedBook.title}
-                </CardTitle>
-                <CardDescription className="text-sm text-text-primary">
-                  {selectedBook.author}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Cover Image Placeholder */}
-                <div className="w-full h-96 bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to text-gray-700 flex items-center justify-center rounded-lg">
-                  Cover Image Placeholder
-                </div>
+          <Card className="w-full border border-border shadow-lg overflow-hidden">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-header">
+                {isAdding && role === "Librarian" ? (
+                  <input
+                    type="text"
+                    placeholder="Enter book title"
+                    className="w-full bg-gray-50 border border-gray-300 rounded p-2"
+                  />
+                ) : (
+                  selectedBook?.title || "Select a book to view details"
+                )}
+              </CardTitle>
+              <CardDescription className="text-sm text-text-primary">
+                {isAdding && role === "Librarian" ? (
+                  <input
+                    type="text"
+                    placeholder="Enter author name"
+                    className="w-full bg-gray-50 border border-gray-300 rounded p-2"
+                  />
+                ) : (
+                  selectedBook?.author
+                )}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Cover Image Placeholder */}
+              <div className="w-full h-96 bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to text-gray-700 flex flex-col items-center justify-center rounded-lg">
+                <span>Cover Image Placeholder</span>
+                {isAdding && role === "Librarian" && (
+                  <Button
+                    variant="secondary"
+                    className="mt-4 hover:bg-blue-600"
+                  >
+                    Upload Image
+                  </Button>
+                )}
+              </div>
 
-                {/* Category */}
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-gray-500">
-                    Category
-                  </span>
+              {/* Category */}
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-gray-500">
+                  Category
+                </span>
+                {isAdding && role === "Librarian" ? (
+                  <input
+                    type="text"
+                    placeholder="Enter categories"
+                    className="w-full bg-gray-50 border border-gray-300 rounded p-2"
+                  />
+                ) : (
                   <span className="text-base text-gray-800">
-                    {selectedBook.category.join(", ")}
+                    {selectedBook?.category.join(", ")}
                   </span>
-                </div>
+                )}
+              </div>
 
-                {/* Date Published */}
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-gray-500">
-                    Date Published
-                  </span>
+              {/* Date Published */}
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-gray-500">
+                  Date Published
+                </span>
+                {isAdding && role === "Librarian" ? (
+                  <input
+                    type="date"
+                    className="w-full bg-gray-50 border border-gray-300 rounded p-2"
+                  />
+                ) : (
                   <span className="text-base text-gray-800">
-                    {
+                    {selectedBook &&
                       new Date(selectedBook.datePublished)
                         .toISOString()
-                        .split("T")[0]
-                    }
+                        .split("T")[0]}
                   </span>
-                </div>
+                )}
+              </div>
 
-                {/* ISBN */}
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-gray-500">
-                    ISBN
-                  </span>
+              {/* ISBN */}
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-gray-500">ISBN</span>
+                {isAdding && role === "Librarian" ? (
+                  <input
+                    type="text"
+                    placeholder="Enter ISBN"
+                    className="w-full bg-gray-50 border border-gray-300 rounded p-2"
+                  />
+                ) : (
                   <span className="text-base text-gray-800">
-                    {selectedBook.isbn}
+                    {selectedBook?.isbn}
                   </span>
-                </div>
+                )}
+              </div>
 
-                {/* Copy Identifier */}
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-gray-500">
-                    Copy Identifier
-                  </span>
+              {/* Copy Identifier */}
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-gray-500">
+                  Copy Identifier
+                </span>
+                {isAdding && role === "Librarian" ? (
+                  <input
+                    type="text"
+                    placeholder="Enter copy identifier"
+                    className="w-full bg-gray-50 border border-gray-300 rounded p-2"
+                  />
+                ) : (
                   <span className="text-base text-gray-800">
-                    {selectedBook.copyIdentifier}
+                    {selectedBook?.copyIdentifier}
                   </span>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="text-gray-500 italic text-center">
-              Select a book to view details
-            </div>
-          )}
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

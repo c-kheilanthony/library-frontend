@@ -64,7 +64,8 @@ function App() {
           path="/librarian-dashboard"
           element={
             role === "Librarian" ? (
-              <LibrarianDashboard onLogout={handleLogout} />
+              (console.log("Role in App.js (LibrarianDashboard):", role),
+              (<LibrarianDashboard onLogout={handleLogout} role={role} />))
             ) : (
               <Navigate to="/login" />
             )

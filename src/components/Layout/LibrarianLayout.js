@@ -17,8 +17,10 @@ import InventoryTab from "../Tabs/InventoryTab";
 import BorrowedBooksTab from "../Tabs/BorrowedBooksTab";
 import RequestsTab from "../Tabs/RequestsTab";
 
-function LibrarianLayout({ onLogout }) {
+function LibrarianLayout({ onLogout, role }) {
   const [activeTab, setActiveTab] = useState("inventory");
+
+  console.log("Role in LibrarianLayout:", role); // Debug log for role
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to text-foreground flex flex-col">
@@ -75,13 +77,13 @@ function LibrarianLayout({ onLogout }) {
 
               {/* Tabs Content */}
               <TabsContent value="inventory">
-                <InventoryTab />
+                <InventoryTab role={role} /> {/* Pass role here */}
               </TabsContent>
               <TabsContent value="requests">
-                <RequestsTab />
+                <RequestsTab role={role} /> {/* Pass role here */}
               </TabsContent>
               <TabsContent value="borrowed">
-                <BorrowedBooksTab />
+                <BorrowedBooksTab role={role} /> {/* Pass role here */}
               </TabsContent>
             </Tabs>
           </CardContent>
