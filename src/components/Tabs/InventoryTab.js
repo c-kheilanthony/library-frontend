@@ -228,16 +228,16 @@ function InventoryTab({ role }) {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Cover Image Placeholder */}
-              <div className="w-full h-96 bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to text-gray-700 flex flex-col items-center justify-center rounded-lg">
-                <span>Cover Image Placeholder</span>
-                {isAdding && role === "Librarian" && (
-                  <Button
-                    variant="secondary"
-                    className="mt-4 hover:bg-blue-600"
-                  >
-                    Upload Image
-                  </Button>
+              {/* Cover Image */}
+              <div className="w-full h-96 bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to flex items-center justify-center rounded-lg overflow-hidden">
+                {selectedBook?.coverImage ? (
+                  <img
+                    src={selectedBook.coverImage}
+                    alt={selectedBook?.title || "Book Cover"}
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <span className="text-gray-700">Cover Image Placeholder</span>
                 )}
               </div>
 
