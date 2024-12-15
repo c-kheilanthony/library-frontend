@@ -34,6 +34,15 @@ function InventoryTab({ role }) {
   const [selectedBook, setSelectedBook] = useState(null);
   const [isAdding, setIsAdding] = useState(false); // Tracks add/edit state
   const [currentPage, setCurrentPage] = useState(1);
+  const [newBook, setNewBook] = useState({
+    title: "",
+    author: "",
+    category: [],
+    datePublished: "",
+    isbn: "",
+    copyIdentifier: "",
+    coverImage: null,
+  });
   const rowsPerPage = 10;
 
   useEffect(() => {
@@ -55,11 +64,82 @@ function InventoryTab({ role }) {
 
   const handleToggleAddMode = () => {
     setSelectedBook(null); // Clear selected book
+    setNewBook({
+      title: "",
+      author: "",
+      category: [],
+      datePublished: "",
+      isbn: "",
+      copyIdentifier: "",
+      coverImage: null,
+    });
     setIsAdding((prev) => !prev); // Toggle add mode
   };
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
+  };
+
+  const handleCategoryAdd = (e) => {
+    const value = e.target.value.trim();
+    if (
+      e.key === "Enter" &&
+      value !== "" &&
+      !newBook.category.includes(value)
+    ) {
+      setNewBook((prev) => ({
+        ...prev,
+        category: [...prev.category, value],
+      }));
+      e.target.value = ""; // Clear the input field
+    }
+  };
+
+  const handleCategoryRemove = (cat) => {
+    setNewBook((prev) => ({
+      ...prev,
+      category: prev.category.filter((c) => c !== cat),
+    }));
+  };
+
+  const handleImageUpload = (e) => {
+    if (e.target.files[0]) {
+      setNewBook((prev) => ({
+        ...prev,
+        coverImage: e.target.files[0],
+      }));
+    }
+  };
+
+  const handleSubmit = async () => {
+    const formData = new FormData();
+    Object.keys(newBook).forEach((key) => {
+      if (key === "category") {
+        formData.append(key, newBook[key].join(","));
+      } else {
+        formData.append(key, newBook[key]);
+      }
+    });
+
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/api/inventory/add`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+      console.log("Book added:", response.data);
+      setIsAdding(false);
+      setInventory((prev) => [...prev, response.data.book]);
+    } catch (err) {
+      console.error("Error adding book:", err);
+    }
+  };
+
+  const formatISBN = (value) => {
+    const formatted = value
+      .replace(/[^0-9X]/gi, "")
+      .replace(/(.{3})(.{1,5})(.{1,7})(.{1,7})(.{1})/, "$1-$2-$3-$4-$5");
+    setNewBook((prev) => ({ ...prev, isbn: formatted }));
   };
 
   // Pagination Logic
@@ -80,13 +160,24 @@ function InventoryTab({ role }) {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-header">Inventory</h1>
         {role === "Librarian" && (
-          <Button
-            variant="secondary"
-            onClick={handleToggleAddMode}
-            className="hover:bg-purple-100 transition"
-          >
-            {isAdding ? "Cancel" : "Add Book"}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="secondary"
+              onClick={handleToggleAddMode}
+              className="hover:bg-purple-100 transition"
+            >
+              {isAdding ? "Cancel" : "Add Book"}
+            </Button>
+            {isAdding && (
+              <Button
+                variant="primary"
+                onClick={handleSubmit}
+                className="hover:bg-blue-500 transition"
+              >
+                Confirm
+              </Button>
+            )}
+          </div>
         )}
       </div>
 
@@ -125,9 +216,9 @@ function InventoryTab({ role }) {
                   key={item._id}
                   className="hover:bg-purple-50 cursor-pointer"
                   onClick={() => {
-                    setSelectedBook(item); // Allow selecting books for all roles
+                    setSelectedBook(item);
                     if (role === "Librarian") {
-                      setIsAdding(false); // Exit add mode if librarian selects a book
+                      setIsAdding(false);
                     }
                   }}
                 >
@@ -135,8 +226,12 @@ function InventoryTab({ role }) {
                     {item._id.slice(0, 8)}...
                   </TableCell>
                   <TableCell className="py-2 px-3 border-b">
-                    {item.category.map((cat) => (
-                      <Badge key={cat} variant="secondary" className="mr-1">
+                    {item.category.map((cat, index) => (
+                      <Badge
+                        key={`${cat}-${index}`}
+                        variant="secondary"
+                        className="mr-1"
+                      >
                         {cat}
                       </Badge>
                     ))}
@@ -208,6 +303,10 @@ function InventoryTab({ role }) {
                 {isAdding && role === "Librarian" ? (
                   <input
                     type="text"
+                    value={newBook.title}
+                    onChange={(e) =>
+                      setNewBook((prev) => ({ ...prev, title: e.target.value }))
+                    }
                     placeholder="Enter book title"
                     className="w-full bg-gray-50 border border-gray-300 rounded p-2"
                   />
@@ -219,6 +318,13 @@ function InventoryTab({ role }) {
                 {isAdding && role === "Librarian" ? (
                   <input
                     type="text"
+                    value={newBook.author}
+                    onChange={(e) =>
+                      setNewBook((prev) => ({
+                        ...prev,
+                        author: e.target.value,
+                      }))
+                    }
                     placeholder="Enter author name"
                     className="w-full bg-gray-50 border border-gray-300 rounded p-2"
                   />
@@ -230,14 +336,34 @@ function InventoryTab({ role }) {
             <CardContent className="space-y-4">
               {/* Cover Image */}
               <div className="w-full h-96 bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to flex items-center justify-center rounded-lg overflow-hidden">
-                {selectedBook?.coverImage ? (
+                {isAdding && role === "Librarian" ? (
+                  newBook.coverImage ? (
+                    <img
+                      src={URL.createObjectURL(newBook.coverImage)}
+                      alt={newBook.title || "Book Cover"}
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <label className="flex flex-col items-center justify-center w-full h-full text-gray-700 cursor-pointer">
+                      <span>Upload Cover Image</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  )
+                ) : selectedBook?.coverImage ? (
                   <img
                     src={selectedBook.coverImage}
                     alt={selectedBook?.title || "Book Cover"}
                     className="w-full h-full object-contain"
                   />
                 ) : (
-                  <span className="text-gray-700">Cover Image Placeholder</span>
+                  <div className="w-full h-full flex items-center justify-center text-gray-700">
+                    No Cover Image
+                  </div>
                 )}
               </div>
 
@@ -247,11 +373,32 @@ function InventoryTab({ role }) {
                   Category
                 </span>
                 {isAdding && role === "Librarian" ? (
-                  <input
-                    type="text"
-                    placeholder="Enter categories"
-                    className="w-full bg-gray-50 border border-gray-300 rounded p-2"
-                  />
+                  <>
+                    <div className="flex flex-wrap gap-2">
+                      {newBook.category.map((cat, index) => (
+                        <Badge
+                          key={`${cat}-${index}`}
+                          variant="secondary"
+                          className="flex items-center gap-2 px-2 my-2"
+                        >
+                          {cat}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCategoryRemove(cat)}
+                          >
+                            &times;
+                          </Button>
+                        </Badge>
+                      ))}
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Enter category and press Enter"
+                      onKeyDown={handleCategoryAdd}
+                      className="w-full bg-gray-50 border border-gray-300 rounded p-2"
+                    />
+                  </>
                 ) : (
                   <span className="text-base text-gray-800">
                     {selectedBook?.category.join(", ")}
@@ -267,6 +414,13 @@ function InventoryTab({ role }) {
                 {isAdding && role === "Librarian" ? (
                   <input
                     type="date"
+                    value={newBook.datePublished}
+                    onChange={(e) =>
+                      setNewBook((prev) => ({
+                        ...prev,
+                        datePublished: e.target.value,
+                      }))
+                    }
                     className="w-full bg-gray-50 border border-gray-300 rounded p-2"
                   />
                 ) : (
@@ -285,6 +439,8 @@ function InventoryTab({ role }) {
                 {isAdding && role === "Librarian" ? (
                   <input
                     type="text"
+                    value={newBook.isbn}
+                    onChange={(e) => formatISBN(e.target.value)}
                     placeholder="Enter ISBN"
                     className="w-full bg-gray-50 border border-gray-300 rounded p-2"
                   />
@@ -303,6 +459,13 @@ function InventoryTab({ role }) {
                 {isAdding && role === "Librarian" ? (
                   <input
                     type="text"
+                    value={newBook.copyIdentifier}
+                    onChange={(e) =>
+                      setNewBook((prev) => ({
+                        ...prev,
+                        copyIdentifier: e.target.value,
+                      }))
+                    }
                     placeholder="Enter copy identifier"
                     className="w-full bg-gray-50 border border-gray-300 rounded p-2"
                   />
