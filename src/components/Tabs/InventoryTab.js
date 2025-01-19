@@ -25,6 +25,7 @@ import {
   CardTitle,
   CardDescription,
 } from "../ui/card";
+import { FaCheck, FaPencilAlt, FaTrash } from "react-icons/fa"; // Use any icon library like FontAwesome
 
 function InventoryTab({ role }) {
   console.log("Role in InventoryTab:", role);
@@ -32,7 +33,9 @@ function InventoryTab({ role }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedBook, setSelectedBook] = useState(null);
-  const [isAdding, setIsAdding] = useState(false); // Tracks add/edit state
+  const [isAdding, setIsAdding] = useState(false); // Tracks add state
+  const [isEditing, setIsEditing] = useState(false); // Tracks edit state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [newBook, setNewBook] = useState({
     title: "",
@@ -62,6 +65,12 @@ function InventoryTab({ role }) {
     fetchInventory();
   }, []);
 
+  useEffect(() => {
+    if (isEditing && selectedBook) {
+      setNewBook({ ...selectedBook });
+    }
+  }, [isEditing, selectedBook]);
+
   const handleToggleAddMode = () => {
     setSelectedBook(null); // Clear selected book
     setNewBook({
@@ -80,26 +89,41 @@ function InventoryTab({ role }) {
     setCurrentPage(page);
   };
 
-  const handleCategoryAdd = (e) => {
-    const value = e.target.value.trim();
-    if (
-      e.key === "Enter" &&
-      value !== "" &&
-      !newBook.category.includes(value)
-    ) {
-      setNewBook((prev) => ({
-        ...prev,
-        category: [...prev.category, value],
-      }));
-      e.target.value = ""; // Clear the input field
+  const handleCategoryAdd = (event) => {
+    if (event.key === "Enter" && event.target.value) {
+      const category = event.target.value.trim();
+
+      if (isAdding && !newBook.category.includes(category)) {
+        // Adding category in adding mode
+        setNewBook((prev) => ({
+          ...prev,
+          category: [...prev.category, category],
+        }));
+      } else if (isEditing && !selectedBook.category.includes(category)) {
+        // Adding category in edit mode
+        setSelectedBook((prev) => ({
+          ...prev,
+          category: [...prev.category, category],
+        }));
+      }
+      event.target.value = ""; // Reset input field
     }
   };
 
-  const handleCategoryRemove = (cat) => {
-    setNewBook((prev) => ({
-      ...prev,
-      category: prev.category.filter((c) => c !== cat),
-    }));
+  const handleCategoryRemove = (category, isEditingMode = false) => {
+    if (isEditingMode) {
+      // Remove category in edit mode
+      setSelectedBook((prev) => ({
+        ...prev,
+        category: prev.category.filter((cat) => cat !== category),
+      }));
+    } else {
+      // Remove category in add mode
+      setNewBook((prev) => ({
+        ...prev,
+        category: prev.category.filter((cat) => cat !== category),
+      }));
+    }
   };
 
   const handleImageUpload = (e) => {
@@ -135,6 +159,63 @@ function InventoryTab({ role }) {
     }
   };
 
+  const handleSaveChanges = async () => {
+    if (!selectedBook || !selectedBook._id) return;
+
+    const formData = new FormData();
+    Object.keys(newBook).forEach((key) => {
+      if (key === "category") {
+        newBook[key].forEach((cat) => formData.append(`${key}[]`, cat));
+      } else {
+        formData.append(key, newBook[key]);
+      }
+    });
+
+    try {
+      const response = await axios.put(
+        `${process.env.REACT_APP_BACKEND_URL}/api/inventory/${selectedBook._id}`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+      console.log("Book updated:", response.data);
+
+      // Update the inventory with the new data
+      setInventory((prev) =>
+        prev.map((book) =>
+          book._id === response.data.book._id ? response.data.book : book
+        )
+      );
+
+      setIsEditing(false); // Exit editing mode
+      setSelectedBook(response.data.book); // Update selectedBook
+    } catch (err) {
+      console.error("Error saving changes:", err);
+    }
+  };
+
+  const handleCancelEditing = () => {
+    setIsEditing(false); // Exit editing mode
+    setSelectedBook(null); // Clear selected book
+  };
+
+  const handleDeleteBook = async () => {
+    try {
+      await axios.delete(
+        `${process.env.REACT_APP_BACKEND_URL}/api/inventory/${selectedBook._id}`
+      );
+      console.log("Book deleted:", selectedBook);
+
+      // Remove the deleted book from the state
+      setInventory((prev) =>
+        prev.filter((book) => book._id !== selectedBook._id)
+      );
+      setSelectedBook(null); // Clear the selected book
+      setShowDeleteModal(false); // Close the modal
+    } catch (err) {
+      console.error("Error deleting book:", err);
+    }
+  };
+
   const formatISBN = (value) => {
     const formatted = value
       .replace(/[^0-9X]/gi, "")
@@ -161,21 +242,35 @@ function InventoryTab({ role }) {
         <h1 className="text-3xl font-bold text-header">Inventory</h1>
         {role === "Librarian" && (
           <div className="flex gap-2">
-            <Button
-              variant="secondary"
-              onClick={handleToggleAddMode}
-              className="hover:bg-purple-100 transition"
-            >
-              {isAdding ? "Cancel" : "Add Book"}
-            </Button>
-            {isAdding && (
-              <Button
-                variant="primary"
-                onClick={handleSubmit}
-                className="hover:bg-blue-500 transition"
-              >
-                Confirm
-              </Button>
+            {isEditing ? (
+              <>
+                <Button
+                  variant="secondary"
+                  onClick={handleCancelEditing}
+                  className="hover:bg-red-100 transition"
+                >
+                  Cancel
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="secondary"
+                  onClick={handleToggleAddMode}
+                  className="hover:bg-purple-100 transition"
+                >
+                  {isAdding ? "Cancel" : "Add Book"}
+                </Button>
+                {isAdding && (
+                  <Button
+                    variant="primary"
+                    onClick={handleSubmit}
+                    className="hover:bg-blue-500 transition"
+                  >
+                    Confirm
+                  </Button>
+                )}
+              </>
             )}
           </div>
         )}
@@ -299,8 +394,10 @@ function InventoryTab({ role }) {
         <div className="w-1/3 flex flex-col items-center">
           <Card className="w-full border border-border shadow-lg overflow-hidden">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-header">
+              <CardTitle className="flex items-center justify-between text-lg font-semibold text-header">
+                {/* Book Title */}
                 {isAdding && role === "Librarian" ? (
+                  // Add mode: Empty field
                   <input
                     type="text"
                     value={newBook.title}
@@ -310,12 +407,104 @@ function InventoryTab({ role }) {
                     placeholder="Enter book title"
                     className="w-full bg-gray-50 border border-gray-300 rounded p-2"
                   />
+                ) : isEditing && role === "Librarian" ? (
+                  // Edit mode: Prefilled with selected book's title
+                  <input
+                    type="text"
+                    value={newBook.title || ""}
+                    onChange={(e) =>
+                      setNewBook((prev) => ({ ...prev, title: e.target.value }))
+                    }
+                    placeholder="Enter book title"
+                    className="w-full bg-gray-50 border border-gray-300 rounded p-2"
+                  />
                 ) : (
-                  selectedBook?.title || "Select a book to view details"
+                  // View mode: Display the book's title
+                  <span className="text-left truncate">
+                    {selectedBook?.title || "Select a book to view details"}
+                  </span>
+                )}
+
+                {/* Buttons Container */}
+                <div className="flex items-center gap-2 ml-4">
+                  {/* Edit Button */}
+                  {selectedBook && role === "Librarian" && (
+                    <button
+                      onClick={() => {
+                        if (isEditing) {
+                          handleSaveChanges();
+                        } else {
+                          setIsEditing(true);
+                          setNewBook({ ...selectedBook }); // Pre-fill form with book details
+                        }
+                      }}
+                      className="text-gray-500 hover:text-gray-800 transition"
+                    >
+                      {isEditing ? <FaCheck /> : <FaPencilAlt />}
+                    </button>
+                  )}
+
+                  {/* Delete Button */}
+                  {selectedBook && role === "Librarian" && (
+                    <button
+                      onClick={() => setShowDeleteModal(true)}
+                      className="text-red-500 hover:text-red-800 transition"
+                    >
+                      {isEditing ? null : <FaTrash />}
+                    </button>
+                  )}
+                </div>
+
+                {/* Delete Confirmation Modal */}
+                {showDeleteModal && (
+                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="bg-white rounded-lg p-6 w-1/3">
+                      <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                        Confirm Deletion
+                      </h2>
+                      <p className="text-gray-600 mb-6">
+                        Are you sure you want to delete the book "
+                        {selectedBook?.title}"? This action cannot be undone.
+                      </p>
+                      <div className="flex justify-end gap-4">
+                        <Button
+                          variant="secondary"
+                          onClick={() => setShowDeleteModal(false)}
+                          className="hover:bg-gray-100"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          onClick={handleDeleteBook}
+                          className="hover:bg-red-600"
+                        >
+                          Confirm
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </CardTitle>
+
+              {/* Author */}
               <CardDescription className="text-sm text-text-primary">
                 {isAdding && role === "Librarian" ? (
+                  // Add mode: Empty field
+                  <input
+                    type="text"
+                    value={newBook.author}
+                    onChange={(e) =>
+                      setNewBook((prev) => ({
+                        ...prev,
+                        author: e.target.value,
+                      }))
+                    }
+                    placeholder="Enter author name"
+                    className="w-full bg-gray-50 border border-gray-300 rounded p-2"
+                  />
+                ) : isEditing && role === "Librarian" ? (
+                  // Edit mode: Prefilled with selected book's author
                   <input
                     type="text"
                     value={newBook.author}
@@ -329,17 +518,22 @@ function InventoryTab({ role }) {
                     className="w-full bg-gray-50 border border-gray-300 rounded p-2"
                   />
                 ) : (
-                  selectedBook?.author
+                  // View mode: Display the book's author
+                  selectedBook?.author || "Select a book to view details"
                 )}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Cover Image */}
-              <div className="w-full h-96 bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to flex items-center justify-center rounded-lg overflow-hidden">
+              <div className="w-full h-96 bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to flex items-center justify-center rounded-lg overflow-hidden relative">
                 {isAdding && role === "Librarian" ? (
                   newBook.coverImage ? (
                     <img
-                      src={URL.createObjectURL(newBook.coverImage)}
+                      src={
+                        newBook.coverImage instanceof Blob
+                          ? URL.createObjectURL(newBook.coverImage)
+                          : newBook.coverImage
+                      }
                       alt={newBook.title || "Book Cover"}
                       className="w-full h-full object-contain"
                     />
@@ -354,9 +548,44 @@ function InventoryTab({ role }) {
                       />
                     </label>
                   )
+                ) : isEditing && role === "Librarian" ? (
+                  newBook.coverImage || selectedBook?.coverImage ? (
+                    <div className="relative w-full h-full">
+                      <img
+                        src={
+                          newBook.coverImage instanceof Blob
+                            ? URL.createObjectURL(newBook.coverImage)
+                            : newBook.coverImage || selectedBook.coverImage
+                        }
+                        alt={
+                          newBook.title || selectedBook?.title || "Book Cover"
+                        }
+                        className="w-full h-full object-contain opacity-70"
+                      />
+                      <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 text-white cursor-pointer">
+                        <span>Upload New Cover Image</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  ) : (
+                    <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 text-white cursor-pointer">
+                      <span>Upload Cover Image</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  )
                 ) : selectedBook?.coverImage ? (
                   <img
-                    src={selectedBook.coverImage}
+                    src={selectedBook.coverImage} // Directly use the URL here for existing cover image
                     alt={selectedBook?.title || "Book Cover"}
                     className="w-full h-full object-contain"
                   />
@@ -399,6 +628,33 @@ function InventoryTab({ role }) {
                       className="w-full bg-gray-50 border border-gray-300 rounded p-2"
                     />
                   </>
+                ) : isEditing && role === "Librarian" ? (
+                  <>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedBook?.category.map((cat, index) => (
+                        <Badge
+                          key={`${cat}-${index}`}
+                          variant="secondary"
+                          className="flex items-center gap-2 px-2 my-2"
+                        >
+                          {cat}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCategoryRemove(cat, true)} // true to indicate removal in edit mode
+                          >
+                            &times;
+                          </Button>
+                        </Badge>
+                      ))}
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Enter category and press Enter"
+                      onKeyDown={handleCategoryAdd}
+                      className="w-full bg-gray-50 border border-gray-300 rounded p-2"
+                    />
+                  </>
                 ) : (
                   <span className="text-base text-gray-800">
                     {selectedBook?.category.join(", ")}
@@ -423,6 +679,24 @@ function InventoryTab({ role }) {
                     }
                     className="w-full bg-gray-50 border border-gray-300 rounded p-2"
                   />
+                ) : isEditing && role === "Librarian" ? (
+                  <input
+                    type="date"
+                    value={
+                      selectedBook.datePublished
+                        ? new Date(selectedBook.datePublished)
+                            .toISOString()
+                            .split("T")[0]
+                        : ""
+                    }
+                    onChange={(e) =>
+                      setSelectedBook((prev) => ({
+                        ...prev,
+                        datePublished: e.target.value,
+                      }))
+                    }
+                    className="w-full bg-gray-50 border border-gray-300 rounded p-2"
+                  />
                 ) : (
                   <span className="text-base text-gray-800">
                     {selectedBook &&
@@ -440,8 +714,16 @@ function InventoryTab({ role }) {
                   <input
                     type="text"
                     value={newBook.isbn}
-                    onChange={(e) => formatISBN(e.target.value)}
+                    onChange={(e) => formatISBN(e.target.value)} // Use formatter for adding mode
                     placeholder="Enter ISBN"
+                    className="w-full bg-gray-50 border border-gray-300 rounded p-2"
+                  />
+                ) : isEditing && role === "Librarian" ? (
+                  <input
+                    type="text"
+                    value={newBook.isbn || ""} // Ensure we use newBook in edit mode
+                    onChange={(e) => formatISBN(e.target.value)} // Use formatter for editing mode
+                    placeholder="Edit ISBN"
                     className="w-full bg-gray-50 border border-gray-300 rounded p-2"
                   />
                 ) : (
@@ -460,12 +742,33 @@ function InventoryTab({ role }) {
                   <input
                     type="text"
                     value={newBook.copyIdentifier}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const sanitizedValue = e.target.value.replace(
+                        /[^0-9]/g,
+                        ""
+                      ); // Allow numbers only
                       setNewBook((prev) => ({
                         ...prev,
-                        copyIdentifier: e.target.value,
-                      }))
-                    }
+                        copyIdentifier: sanitizedValue,
+                      }));
+                    }}
+                    placeholder="Enter copy identifier"
+                    className="w-full bg-gray-50 border border-gray-300 rounded p-2"
+                  />
+                ) : isEditing && role === "Librarian" ? (
+                  <input
+                    type="text"
+                    value={selectedBook.copyIdentifier || ""}
+                    onChange={(e) => {
+                      const sanitizedValue = e.target.value.replace(
+                        /[^0-9]/g,
+                        ""
+                      ); // Allow numbers only
+                      setSelectedBook((prev) => ({
+                        ...prev,
+                        copyIdentifier: sanitizedValue,
+                      }));
+                    }}
                     placeholder="Enter copy identifier"
                     className="w-full bg-gray-50 border border-gray-300 rounded p-2"
                   />
