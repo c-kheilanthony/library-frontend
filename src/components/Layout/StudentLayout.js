@@ -18,8 +18,9 @@ import RequestsTab from "../Tabs/RequestsTab";
 import BorrowedBooksTab from "../Tabs/BorrowedBooksTab";
 import HistoryTab from "../Tabs/HistoryTab";
 
-function StudentLayout({ onLogout }) {
+function StudentLayout({ onLogout, role, username }) {
   const [activeTab, setActiveTab] = useState("collections");
+  console.log("Username in StudentLayout:", username);
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to text-foreground flex flex-col">
@@ -79,7 +80,7 @@ function StudentLayout({ onLogout }) {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <InventoryTab />
+                <InventoryTab role={role} username={username} />
               </CardContent>
             </Card>
           </TabsContent>

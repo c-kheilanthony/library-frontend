@@ -12,23 +12,28 @@ import StudentDashboard from "./pages/StudentDashboard";
 
 function App() {
   const [role, setRole] = useState("");
+  const [username, setUsername] = useState("");
 
   // Check localStorage for a stored role on app load
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
-    if (storedRole) {
-      setRole(storedRole);
-    }
+    const storedUsername = localStorage.getItem("username");
+
+    if (storedRole) setRole(storedRole);
+    if (storedUsername) setUsername(storedUsername);
   }, []);
 
-  const handleLogin = (userRole) => {
+  const handleLogin = (userRole, username) => {
     setRole(userRole);
+    setUsername(username);
     localStorage.setItem("role", userRole); // Persist role in localStorage
+    localStorage.setItem("username", username);
   };
 
   const handleLogout = () => {
     setRole("");
     localStorage.removeItem("role"); // Clear role from localStorage
+    localStorage.removeItem("username");
     localStorage.removeItem("token"); // Clear token (if stored)
   };
 
@@ -65,7 +70,14 @@ function App() {
           element={
             role === "Librarian" ? (
               (console.log("Role in App.js (LibrarianDashboard):", role),
-              (<LibrarianDashboard onLogout={handleLogout} role={role} />))
+              console.log("Username in App.js (LibrarianDashboard):", username),
+              (
+                <LibrarianDashboard
+                  onLogout={handleLogout}
+                  role={role}
+                  username={username}
+                />
+              ))
             ) : (
               <Navigate to="/login" />
             )
@@ -77,7 +89,15 @@ function App() {
           path="/student-dashboard"
           element={
             role === "Student" ? (
-              <StudentDashboard onLogout={handleLogout} />
+              (console.log("Role in App.js (StudentDashboard):", role),
+              console.log("Username in App.js (StudentDashboard):", username),
+              (
+                <StudentDashboard
+                  onLogout={handleLogout}
+                  role={role}
+                  username={username}
+                />
+              ))
             ) : (
               <Navigate to="/login" />
             )

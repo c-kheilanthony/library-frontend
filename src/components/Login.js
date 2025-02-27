@@ -19,7 +19,8 @@ function Login({ onLogin }) {
       const { token, role } = response.data;
       localStorage.setItem("token", token); // Store JWT token
       localStorage.setItem("role", role); // Store role for persistent login
-      onLogin(role);
+      localStorage.setItem("username", username);
+      onLogin(role, username);
       navigate(`/${role.toLowerCase()}-dashboard`); // Redirect to the appropriate dashboard
     } catch (err) {
       setError("Invalid username or password");

@@ -20,8 +20,9 @@ import {
   PaginationPrevious,
 } from "../ui/pagination";
 
-function InventoryTab({ role }) {
+function InventoryTab({ role, username }) {
   console.log("Role in InventoryTab:", role);
+  console.log("Name in InventoryTab:", username);
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -63,6 +64,27 @@ function InventoryTab({ role }) {
       setNewBook({ ...selectedBook });
     }
   }, [isEditing, selectedBook]);
+
+  const handleRequestBook = async () => {
+    if (!selectedBook || !selectedBook._id) {
+      console.error("No book selected");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/api/requests`,
+        {
+          studentId: "AC2021-0786", // Replace this with dynamic student ID
+          bookId: selectedBook._id,
+        }
+      );
+      console.log("studentId:", username);
+      console.log("Book request successful:", response.data);
+    } catch (error) {
+      console.error("Error requesting book:", error);
+    }
+  };
 
   const handleToggleAddMode = () => {
     setSelectedBook(null); // Clear selected book
@@ -402,6 +424,7 @@ function InventoryTab({ role }) {
             showDeleteModal={showDeleteModal}
             formatISBN={formatISBN}
             setSelectedBook={setSelectedBook}
+            handleRequestBook={handleRequestBook} // Pass the function
           />
         </div>
       </div>

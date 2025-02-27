@@ -27,6 +27,7 @@ function BookDetails({
   showDeleteModal,
   formatISBN,
   setSelectedBook,
+  handleRequestBook,
 }) {
   return (
     <Card className="w-full border border-border shadow-lg overflow-hidden">
@@ -405,6 +406,14 @@ function BookDetails({
             </span>
           )}
         </div>
+        <Button
+          variant="secondary" // or "outline", "secondary", etc.
+          className="w-full mt-2" // Added margin-top
+          // onClick={} Add your click handler here
+          onClick={handleRequestBook}
+        >
+          Request this book
+        </Button>
       </CardContent>
     </Card>
   );
