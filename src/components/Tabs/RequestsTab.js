@@ -19,7 +19,8 @@ import {
   PaginationPrevious,
 } from "../ui/pagination";
 
-function RequestsTab(role) {
+function RequestsTab({ role, username }) {
+  console.log("Username in RequestsTab:", username);
   const [inventory, setInventory] = useState([]);
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -45,9 +46,13 @@ function RequestsTab(role) {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/api/requests`
-        );
+        let url = `${process.env.REACT_APP_BACKEND_URL}/api/requests`;
+
+        if (role === "Student") {
+          url += `/${username}`;
+        }
+
+        const response = await axios.get(url);
         setRequests(response.data);
         setLoading(false);
       } catch (err) {
@@ -57,6 +62,7 @@ function RequestsTab(role) {
     };
     fetchRequests();
   }, []);
+
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
@@ -108,9 +114,11 @@ function RequestsTab(role) {
                 <TableHead className="font-semibold text-black text-left py-2 px-3 border-b w-[15%]">
                   ISBN
                 </TableHead>
-                <TableHead className="font-semibold text-black text-left py-2 px-3 border-b w-[20%]">
-                  Requested By
-                </TableHead>
+                {role === "Librarian" && (
+                  <TableHead className="font-semibold text-black text-left py-2 px-3 border-b w-[20%]">
+                    Requested By
+                  </TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -149,9 +157,11 @@ function RequestsTab(role) {
                   <TableCell className="py-2 px-3 border-b">
                     {request.isbn}
                   </TableCell>
-                  <TableCell className="py-2 px-3 border-b">
-                    {request.studentId}
-                  </TableCell>
+                  {role === "Librarian" && (
+                    <TableCell className="py-2 px-3 border-b">
+                      {request.studentId}
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>

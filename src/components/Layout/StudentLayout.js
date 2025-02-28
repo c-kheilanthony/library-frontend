@@ -27,13 +27,21 @@ function StudentLayout({ onLogout, role, username }) {
       {/* Header */}
       <header className="border-b px-28 border-border bg-white/70 backdrop-blur-sm px-6 py-4 flex justify-between items-center shadow-md">
         <h1 className="text-3xl font-bold text-header">Student Dashboard</h1>
-        <Button
-          variant="destructive"
-          onClick={onLogout}
-          className="hover:bg-button-primary-hover focus:ring-2 focus:ring-button-focus"
-        >
-          Logout
-        </Button>
+
+        {/* Username and Logout Button Container */}
+        <div className="flex items-center gap-4">
+          {/* Display Username */}
+          <span className="text-lg font-medium text-gray-700">{username}</span>
+
+          {/* Logout Button */}
+          <Button
+            variant="destructive"
+            onClick={onLogout}
+            className="hover:bg-button-primary-hover focus:ring-2 focus:ring-button-focus"
+          >
+            Logout
+          </Button>
+        </div>
       </header>
 
       {/* Main Content Area */}
@@ -95,7 +103,7 @@ function StudentLayout({ onLogout, role, username }) {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <RequestsTab />
+                <RequestsTab role={role} username={username} />
               </CardContent>
             </Card>
           </TabsContent>
