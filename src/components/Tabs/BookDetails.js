@@ -28,6 +28,7 @@ function BookDetails({
   formatISBN,
   setSelectedBook,
   handleRequestBook,
+  sourceTab,
 }) {
   return (
     <Card className="w-full border border-border shadow-lg overflow-hidden">
@@ -291,7 +292,7 @@ function BookDetails({
             </>
           ) : (
             <span className="text-base text-gray-800">
-              {selectedBook?.category.join(", ")}
+              {selectedBook?.category?.join(", ") || "No category"}
             </span>
           )}
         </div>
@@ -333,10 +334,12 @@ function BookDetails({
             />
           ) : (
             <span className="text-base text-gray-800">
-              {selectedBook &&
-                new Date(selectedBook.datePublished)
-                  .toISOString()
-                  .split("T")[0]}
+              {selectedBook?.datePublished &&
+              !isNaN(new Date(selectedBook.datePublished))
+                ? new Date(selectedBook.datePublished)
+                    .toISOString()
+                    .split("T")[0]
+                : "No Date Published"}
             </span>
           )}
         </div>
@@ -406,14 +409,15 @@ function BookDetails({
             </span>
           )}
         </div>
-        <Button
-          variant="secondary" // or "outline", "secondary", etc.
-          className="w-full mt-2" // Added margin-top
-          // onClick={} Add your click handler here
-          onClick={handleRequestBook}
-        >
-          Request this book
-        </Button>
+        {sourceTab === "inventory" && role === "Student" && (
+          <Button
+            variant="secondary"
+            className="w-full mt-2"
+            onClick={handleRequestBook}
+          >
+            Request this book
+          </Button>
+        )}
       </CardContent>
     </Card>
   );

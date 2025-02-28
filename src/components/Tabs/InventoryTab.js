@@ -327,6 +327,8 @@ function InventoryTab({ role, username }) {
                   className="hover:bg-purple-50 cursor-pointer"
                   onClick={() => {
                     setSelectedBook(item);
+                    console.log("Current data:", currentData);
+                    console.log("Selected book:", item);
                     if (role === "Librarian") {
                       setIsAdding(false);
                     }
@@ -425,6 +427,7 @@ function InventoryTab({ role, username }) {
             formatISBN={formatISBN}
             setSelectedBook={setSelectedBook}
             handleRequestBook={handleRequestBook} // Pass the function
+            sourceTab="inventory"
           />
         </div>
       </div>
