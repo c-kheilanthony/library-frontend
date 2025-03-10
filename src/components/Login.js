@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Button } from "./ui/button";
+import { toast, Toaster } from "sonner";
 
 function Login({ onLogin }) {
   const [username, setUsername] = useState("");
@@ -21,7 +22,10 @@ function Login({ onLogin }) {
       localStorage.setItem("role", role); // Store role for persistent login
       localStorage.setItem("username", username);
       onLogin(role, username);
-      navigate(`/${role.toLowerCase()}-dashboard`); // Redirect to the appropriate dashboard
+      toast.success("Login successful! Redirecting...");
+      setTimeout(() => {
+        navigate(`/${role.toLowerCase()}-dashboard`);
+      }, 1000); // Redirect to the appropriate dashboard
     } catch (err) {
       setError("Invalid username or password");
     }
@@ -75,6 +79,9 @@ function Login({ onLogin }) {
           {error && <p className="text-destructive text-sm mt-2">{error}</p>}
         </form>
       </div>
+      <Toaster richColors position="top-right" />{" "}
+      {/* Ensures toasts are rendered */}
+      {/* Your other components */}
     </div>
   );
 }

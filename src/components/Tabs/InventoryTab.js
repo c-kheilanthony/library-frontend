@@ -19,6 +19,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "../ui/pagination";
+import { toast, Toaster } from "sonner";
+import { FaBook } from "react-icons/fa";
 
 function InventoryTab({ role, username }) {
   console.log("Role in InventoryTab:", role);
@@ -67,6 +69,7 @@ function InventoryTab({ role, username }) {
 
   const handleRequestBook = async () => {
     if (!selectedBook || !selectedBook._id) {
+      toast.error("No book selected");
       console.error("No book selected");
       return;
     }
@@ -75,12 +78,16 @@ function InventoryTab({ role, username }) {
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/api/requests`,
         {
-          studentId: "AC2021-0786", // Replace this with dynamic student ID
+          studentId: username, // Replace this with dynamic student ID
           bookId: selectedBook._id,
         }
       );
       console.log("studentId:", username);
       console.log("Book request successful:", response.data);
+      toast.success("Book request sent successfully!", {
+        className: "bg-[#F5F3E7] border-l-4 border-[#8B5E3C] text-[#5A3E2B]",
+        icon: <FaBook />,
+      });
     } catch (error) {
       console.error("Error requesting book:", error);
     }
@@ -426,11 +433,12 @@ function InventoryTab({ role, username }) {
             showDeleteModal={showDeleteModal}
             formatISBN={formatISBN}
             setSelectedBook={setSelectedBook}
-            handleRequestBook={handleRequestBook} // Pass the function
+            handleRequestBook={handleRequestBook}
             sourceTab="inventory"
           />
         </div>
       </div>
+      <Toaster richColors position="top-center" />
     </div>
   );
 }

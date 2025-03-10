@@ -18,6 +18,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "../ui/pagination";
+import { Alert, AlertTitle, AlertDescription } from "../ui/alert";
+import { AlertCircle } from "lucide-react";
 
 function RequestsTab({ role, username }) {
   console.log("Username in RequestsTab:", username);
@@ -53,6 +55,7 @@ function RequestsTab({ role, username }) {
         }
 
         const response = await axios.get(url);
+        console.log("Fetched requests data:", response.data);
         setRequests(response.data);
         setLoading(false);
       } catch (err) {
@@ -90,7 +93,19 @@ function RequestsTab({ role, username }) {
   );
 
   if (loading) return <p>Loading requests...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
+  if (error)
+    return (
+      <Alert
+        variant="destructive"
+        className="rounded-2xl bg-red-100 border-red-300 shadow-md"
+      >
+        <AlertCircle className="h-5 w-5 text-red-500" />
+        <AlertTitle className="text-red-600 font-semibold">Oops!</AlertTitle>
+        <AlertDescription className="text-red-500">
+          You have no requests yet!
+        </AlertDescription>
+      </Alert>
+    );
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
