@@ -22,7 +22,6 @@ import { Alert, AlertTitle, AlertDescription } from "../ui/alert";
 import { AlertCircle } from "lucide-react";
 
 function RequestsTab({ role, username }) {
-  console.log("Username in RequestsTab:", username);
   const [inventory, setInventory] = useState([]);
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);

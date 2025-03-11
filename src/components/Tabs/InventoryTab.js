@@ -23,8 +23,6 @@ import { toast, Toaster } from "sonner";
 import { FaBook } from "react-icons/fa";
 
 function InventoryTab({ role, username }) {
-  console.log("Role in InventoryTab:", role);
-  console.log("Name in InventoryTab:", username);
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -120,6 +118,7 @@ function InventoryTab({ role, username }) {
         setNewBook((prev) => ({
           ...prev,
           category: [...prev.category, category],
+          coverImage: prev.coverImage || selectedBook?.coverImage,
         }));
       } else if (isEditing && !selectedBook.category.includes(category)) {
         // Adding category in edit mode
@@ -144,16 +143,21 @@ function InventoryTab({ role, username }) {
       setNewBook((prev) => ({
         ...prev,
         category: prev.category.filter((cat) => cat !== category),
+        coverImage: prev.coverImage || selectedBook?.coverImage,
       }));
     }
   };
 
   const handleImageUpload = (e) => {
     if (e.target.files[0]) {
+      console.log("📷 File Selected:", e.target.files[0]);
+
       setNewBook((prev) => ({
         ...prev,
-        coverImage: e.target.files[0],
+        coverImage: e.target.files[0], // This should be a File object
       }));
+    } else {
+      console.log("🚫 No file selected");
     }
   };
 
@@ -185,6 +189,10 @@ function InventoryTab({ role, username }) {
     if (!selectedBook || !selectedBook._id) return;
 
     const formData = new FormData();
+
+    console.log("📜 Selected Book Before Update:", selectedBook);
+    console.log("📜 New Book Data Before Update:", newBook);
+
     Object.keys(newBook).forEach((key) => {
       if (key === "category") {
         newBook[key].forEach((cat) => formData.append(`${key}[]`, cat));
@@ -192,6 +200,11 @@ function InventoryTab({ role, username }) {
         formData.append(key, newBook[key]);
       }
     });
+
+    console.log("📦 Final FormData to Send:");
+    for (let pair of formData.entries()) {
+      console.log(pair[0], pair[1]);
+    }
 
     try {
       const response = await axios.put(
@@ -242,7 +255,11 @@ function InventoryTab({ role, username }) {
     const formatted = value
       .replace(/[^0-9X]/gi, "")
       .replace(/(.{3})(.{1,5})(.{1,7})(.{1,7})(.{1})/, "$1-$2-$3-$4-$5");
-    setNewBook((prev) => ({ ...prev, isbn: formatted }));
+    setNewBook((prev) => ({
+      ...prev,
+      isbn: formatted,
+      coverImage: prev.coverImage || selectedBook?.coverImage,
+    }));
   };
 
   // Pagination Logic

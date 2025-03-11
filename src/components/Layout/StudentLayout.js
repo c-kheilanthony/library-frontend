@@ -20,7 +20,6 @@ import HistoryTab from "../Tabs/HistoryTab";
 
 function StudentLayout({ onLogout, role, username }) {
   const [activeTab, setActiveTab] = useState("collections");
-  console.log("Username in StudentLayout:", username);
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to text-foreground flex flex-col">

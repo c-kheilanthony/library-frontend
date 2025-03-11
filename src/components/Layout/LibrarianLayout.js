@@ -20,8 +20,6 @@ import RequestsTab from "../Tabs/RequestsTab";
 function LibrarianLayout({ onLogout, role, username }) {
   const [activeTab, setActiveTab] = useState("inventory");
 
-  console.log("Role in LibrarianLayout:", role); // Debug log for role
-
   return (
     <div className="min-h-screen bg-gradient-to-r from-gradient-from via-gradient-via to-gradient-to text-foreground flex flex-col">
       {/* Header */}
