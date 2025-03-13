@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Button } from "./ui/button";
 import { toast, Toaster } from "sonner";
+import { jwtDecode } from "jwt-decode";
 
 function Login({ onLogin }) {
   const [username, setUsername] = useState("");
@@ -10,14 +11,39 @@ function Login({ onLogin }) {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  function isTokenExpired(token) {
+    if (!token) return true;
+    try {
+      const { exp } = jwtDecode(token);
+      return Date.now() >= exp * 1000; // Compare with current time
+    } catch (error) {
+      return true; // Invalid token
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Clear expired tokens before proceeding
+    const oldToken = localStorage.getItem("token");
+    if (isTokenExpired(oldToken)) {
+      console.log("Old token expired, clearing storage...");
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      localStorage.removeItem("username");
+    }
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/api/users/login`,
         { username, password }
       );
       const { token, role } = response.data;
+
+      // Validate new token before saving it
+      if (isTokenExpired(token)) {
+        throw new Error("Token is already expired!");
+      }
+
       localStorage.setItem("token", token); // Store JWT token
       localStorage.setItem("role", role); // Store role for persistent login
       localStorage.setItem("username", username);
