@@ -20,6 +20,7 @@ import {
 } from "../ui/pagination";
 import { Alert, AlertTitle, AlertDescription } from "../ui/alert";
 import { AlertCircle } from "lucide-react";
+import { toast, Toaster } from "sonner";
 
 function RequestsTab({ role, username }) {
   const [inventory, setInventory] = useState([]);
@@ -90,6 +91,38 @@ function RequestsTab({ role, username }) {
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
+
+  const handleRemoveRequest = async () => {
+    try {
+      console.log("Attempting to delete request...");
+      console.log("Selected book:", selectedBook);
+
+      if (!selectedBook || !selectedBook._id) {
+        console.error("Error: No valid request ID found for deletion.");
+        return;
+      }
+
+      const deleteUrl = `${process.env.REACT_APP_BACKEND_URL}/api/requests/${selectedBook._id}`;
+      console.log("DELETE Request URL:", deleteUrl);
+
+      const response = await axios.delete(deleteUrl);
+      console.log("Delete response:", response.data);
+
+      // Remove the deleted book from the state
+      setRequests((prev) =>
+        prev.filter((book) => book._id !== selectedBook._id)
+      );
+
+      setSelectedBook(null); // Clear the selected book
+      toast.success("Request deleted successfully!");
+    } catch (err) {
+      console.error("Error deleting book:", err);
+      toast.error("Failed to delete request.");
+      if (err.response) {
+        console.error("Server Response:", err.response.data);
+      }
+    }
+  };
 
   if (loading) return <p>Loading requests...</p>;
   if (error)
@@ -223,8 +256,10 @@ function RequestsTab({ role, username }) {
             selectedBook={selectedBook}
             role={role}
             sourceTab={"requests"}
+            handleRemoveRequest={handleRemoveRequest}
           />
         </div>
+        <Toaster richColors position="top-center"></Toaster>
       </div>
     </div>
   );
