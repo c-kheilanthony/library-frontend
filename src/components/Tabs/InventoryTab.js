@@ -193,9 +193,16 @@ function InventoryTab({ role, username }) {
     console.log("📜 Selected Book Before Update:", selectedBook);
     console.log("📜 New Book Data Before Update:", newBook);
 
+    // Append form data properly
     Object.keys(newBook).forEach((key) => {
-      if (key === "category") {
-        newBook[key].forEach((cat) => formData.append(`${key}[]`, cat));
+      if (key === "category" && Array.isArray(newBook[key])) {
+        newBook[key].forEach((cat) => formData.append("category[]", cat));
+      } else if (key === "coverImage") {
+        if (newBook[key] instanceof File) {
+          formData.append(key, newBook[key]); // Append only if it's a file
+        } else {
+          console.warn("⚠️ Skipping coverImage, not a valid File object");
+        }
       } else {
         formData.append(key, newBook[key]);
       }
@@ -210,11 +217,16 @@ function InventoryTab({ role, username }) {
       const response = await axios.put(
         `${process.env.REACT_APP_BACKEND_URL}/api/inventory/${selectedBook._id}`,
         formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        {
+          headers: {
+            Accept: "application/json", // Let Axios set Content-Type automatically
+          },
+        }
       );
-      console.log("Book updated:", response.data);
 
-      // Update the inventory with the new data
+      console.log("✅ Book updated successfully:", response.data);
+
+      // Update inventory state
       setInventory((prev) =>
         prev.map((book) =>
           book._id === response.data.book._id ? response.data.book : book
@@ -222,9 +234,12 @@ function InventoryTab({ role, username }) {
       );
 
       setIsEditing(false); // Exit editing mode
-      setSelectedBook(response.data.book); // Update selectedBook
-    } catch (err) {
-      console.error("Error saving changes:", err);
+      setSelectedBook(response.data.book); // Update selected book
+    } catch (error) {
+      console.error(
+        "❌ Error saving changes:",
+        error.response ? error.response.data : error.message
+      );
     }
   };
 
