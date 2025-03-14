@@ -27,7 +27,8 @@
     "sonner": "^2.0.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "yocto-queue": "^1.2.0"
   },
   "scripts": {
     "start": "react-scripts start",
