@@ -461,14 +461,23 @@ function BookDetails({
             Request this book
           </Button>
         )}
-        {sourceTab === "requests" && role === "Student" && selectedBook && (
+        {sourceTab === "requests" && selectedBook && (
           <div>
+            {role === "Librarian" && (
+              <Button
+                onClick={() => setOpenDialog("denyRequest")}
+                variant="secondary"
+                className="w-full mt-2"
+              >
+                Approve
+              </Button>
+            )}
             <Button
               onClick={() => setOpenDialog("removeRequest")}
               variant="destructive"
               className="w-full mt-2"
             >
-              Delete from requests
+              {role === "students" ? "Delete from requests" : "Reject request"}
             </Button>
 
             {openDialog === "removeRequest" && (
