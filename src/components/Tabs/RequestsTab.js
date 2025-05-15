@@ -124,6 +124,60 @@ function RequestsTab({ role, username }) {
     }
   };
 
+  const handleApproveRequest = async () => {
+    try {
+      console.log("Attempting to approve request...");
+      console.log("Selected book:", selectedBook);
+
+      if (!selectedBook || !selectedBook._id || !selectedBook.bookId) {
+        console.error("Error: No valid book or request ID found for approval.");
+        return;
+      }
+      console.log("Student ID:", selectedBook.studentId);
+      console.log("Book ID:", selectedBook.bookId);
+
+      const borrowUrl = `${process.env.REACT_APP_BACKEND_URL}/api/borrowed`;
+      console.log("Borrow Book URL:", borrowUrl);
+
+      // Prepare the data to be sent to the backend
+      const borrowData = {
+        studentId: selectedBook.studentId,
+        bookId: selectedBook.bookId, // Use the bookId directly from the populated data
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+        approvedBy: "LIB001", // You can dynamically set this if needed
+      };
+
+      console.log("Payload Data:", borrowData);
+      console.log("Initiating POST request to borrow the book...");
+
+      // Make the POST request to the backend
+      const response = await axios.post(borrowUrl, borrowData);
+      console.log("Borrow response:", response.data);
+
+      // Remove the approved request from the state
+      setRequests((prev) =>
+        prev.filter((book) => book._id !== selectedBook._id)
+      );
+      console.log(
+        "Initiating DELETE request for request ID:",
+        selectedBook._id
+      );
+      // delete the request
+      const deleteUrl = `${process.env.REACT_APP_BACKEND_URL}/api/requests/${selectedBook._id}`;
+      await axios.delete(deleteUrl);
+      console.log("Delete request response:", response.data);
+
+      setSelectedBook(null); // Clear the selected book
+      toast.success("Book borrowed successfully!");
+    } catch (err) {
+      console.error("Error borrowing book:", err);
+      toast.error("Failed to borrow book.");
+      if (err.response) {
+        console.error("Server Response:", err.response.data);
+      }
+    }
+  };
+
   if (loading) return <p>Loading requests...</p>;
   if (error)
     return (
@@ -257,6 +311,7 @@ function RequestsTab({ role, username }) {
             role={role}
             sourceTab={"requests"}
             handleRemoveRequest={handleRemoveRequest}
+            handleApproveRequest={handleApproveRequest}
           />
         </div>
         <Toaster richColors position="top-center"></Toaster>

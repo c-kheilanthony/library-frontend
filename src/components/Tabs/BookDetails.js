@@ -29,6 +29,7 @@ function BookDetails({
   setSelectedBook,
   handleRequestBook,
   handleRemoveRequest,
+  handleApproveRequest,
   sourceTab,
 }) {
   const [openDialog, setOpenDialog] = useState(null);
@@ -38,6 +39,8 @@ function BookDetails({
     if (openDialog === "removeRequest") {
       dialogRef.current?.showModal();
     } else if (openDialog === "removeBook") {
+      dialogRef.current?.showModal();
+    } else if (openDialog === "approveRequest") {
       dialogRef.current?.showModal();
     } else {
       dialogRef.current?.close();
@@ -124,11 +127,11 @@ function BookDetails({
             >
               <style>
                 {`
-        dialog::backdrop {
-          background: rgba(0, 0, 0, 0.8); /* Darker backdrop */
-          transition: all 0.3s ease-in-out;
-        }
-      `}
+                  dialog::backdrop {
+                    background: rgba(0, 0, 0, 0.8); /* Darker backdrop */
+                    transition: all 0.3s ease-in-out;
+                  }
+                `}
               </style>
 
               {/* Header */}
@@ -465,7 +468,7 @@ function BookDetails({
           <div>
             {role === "Librarian" && (
               <Button
-                onClick={() => setOpenDialog("denyRequest")}
+                onClick={() => setOpenDialog("approveRequest")}
                 variant="secondary"
                 className="w-full mt-2"
               >
@@ -484,10 +487,10 @@ function BookDetails({
               <dialog ref={dialogRef} className="rounded-lg p-6 shadow-xl">
                 <style>
                   {`
-      dialog::backdrop {
-        background: rgba(0, 0, 0, 0.8); /* Change 0.5 to adjust darkness */
-      }
-    `}
+                    dialog::backdrop {
+                      background: rgba(0, 0, 0, 0.8);
+                    }
+                  `}
                 </style>
                 <h2 className="text-lg font-semibold">
                   Do you want to delete this request?
@@ -502,6 +505,38 @@ function BookDetails({
                   <button
                     onClick={() => {
                       handleRemoveRequest();
+                      setOpenDialog(null);
+                    }}
+                    className="px-4 py-2 bg-red-500 text-white rounded"
+                  >
+                    Yes
+                  </button>
+                </div>
+              </dialog>
+            )}
+
+            {openDialog === "approveRequest" && (
+              <dialog ref={dialogRef} className="rounded-lg p-6 shadow-xl">
+                <style>
+                  {`
+                    dialog::backdrop {
+                      background: rgba(0, 0, 0, 0.8);
+                    }
+                  `}
+                </style>
+                <h2 className="text-lg font-semibold">
+                  Do you want to approve this request?
+                </h2>
+                <div className="flex justify-end gap-4 mt-4">
+                  <button
+                    onClick={() => setOpenDialog(null)}
+                    className="px-4 py-2 bg-gray-200 rounded"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleApproveRequest();
                       setOpenDialog(null);
                     }}
                     className="px-4 py-2 bg-red-500 text-white rounded"
