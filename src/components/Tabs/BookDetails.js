@@ -88,36 +88,37 @@ function BookDetails({
               {selectedBook?.title || "Select a book to view details"}
             </span>
           )}
-
           {/* Buttons Container */}
-          <div className="flex items-center gap-2 ml-4">
-            {/* Edit Button */}
-            {selectedBook && role === "Librarian" && (
-              <button
-                onClick={() => {
-                  if (isEditing) {
-                    handleSaveChanges();
-                  } else {
-                    setIsEditing(true);
-                    setNewBook({ ...selectedBook }); // Pre-fill form with book details
-                  }
-                }}
-                className="text-gray-500 hover:text-gray-800 transition"
-              >
-                {isEditing ? <FaCheck /> : <FaPencilAlt />}
-              </button>
-            )}
+          {sourceTab === "inventory" && (
+            <div className="flex items-center gap-2 ml-4">
+              {/* Edit Button */}
+              {selectedBook && role === "Librarian" && (
+                <button
+                  onClick={() => {
+                    if (isEditing) {
+                      handleSaveChanges();
+                    } else {
+                      setIsEditing(true);
+                      setNewBook({ ...selectedBook }); // Pre-fill form with book details
+                    }
+                  }}
+                  className="text-gray-500 hover:text-gray-800 transition"
+                >
+                  {isEditing ? <FaCheck /> : <FaPencilAlt />}
+                </button>
+              )}
 
-            {/* Delete Button */}
-            {selectedBook && role === "Librarian" && (
-              <button
-                onClick={() => setOpenDialog("removeBook")}
-                className="text-red-500 hover:text-red-800 transition"
-              >
-                {isEditing ? null : <FaTrash />}
-              </button>
-            )}
-          </div>
+              {/* Delete Button */}
+              {selectedBook && role === "Librarian" && (
+                <button
+                  onClick={() => setOpenDialog("removeBook")}
+                  className="text-red-500 hover:text-red-800 transition"
+                >
+                  {isEditing ? null : <FaTrash />}
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Delete Confirmation Modal */}
           {openDialog === "removeBook" && (
@@ -410,7 +411,7 @@ function BookDetails({
             />
           ) : (
             <span className="text-base text-gray-800">
-              {selectedBook?.isbn}
+              {selectedBook?.isbn || "No ISBN"}
             </span>
           )}
         </div>
@@ -451,10 +452,47 @@ function BookDetails({
             />
           ) : (
             <span className="text-base text-gray-800">
-              {selectedBook?.copyIdentifier}
+              {selectedBook?.copyIdentifier || "No Copy Identifier"}
             </span>
           )}
         </div>
+
+        {/* Borrowed At*/}
+        {sourceTab === "borrowed" && (
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-gray-500">
+              Borrowed At
+            </span>
+            <span className="text-base text-gray-800">
+              {selectedBook?.borrowedAt
+                ? new Date(selectedBook.borrowedAt).toISOString().split("T")[0]
+                : "Not Borrowed"}
+            </span>
+          </div>
+        )}
+
+        {/* Due Date */}
+        {sourceTab === "borrowed" && (
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-gray-500">Due Date</span>
+            <span className="text-base text-gray-800">
+              {selectedBook?.dueDate
+                ? new Date(selectedBook.dueDate).toISOString().split("T")[0]
+                : "No Due Date"}
+            </span>
+          </div>
+        )}
+
+        {/* Penalty */}
+        {sourceTab === "borrowed" && (
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-gray-500">Penalty</span>
+            <span className="text-base text-gray-800">
+              {selectedBook?.penalty ? selectedBook.penalty : "No Penalty"}
+            </span>
+          </div>
+        )}
+
         {sourceTab === "inventory" && role === "Student" && (
           <Button
             variant="secondary"

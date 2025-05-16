@@ -67,9 +67,12 @@ function BorrowedBooksTab({ role }) {
     return {
       ...entry,
       title: entry.bookId?.title || "Unknown",
+      category: entry.bookId?.category || "Unknown",
+      coverImage: entry.bookId?.coverImage,
       author: entry.bookId?.author || "Unknown",
       datePublished: entry.bookId?.datePublished || "Unknown",
       isbn: entry.bookId?.isbn || "Unknown",
+      copyIdentifier: entry.bookId?.copyIdentifier || "Unknown",
       borrowedAt,
       dueDate,
       penalty,
@@ -117,9 +120,11 @@ function BorrowedBooksTab({ role }) {
                 <TableHead className="font-semibold text-black text-left py-2 px-3 border-b w-[15%]">
                   ISBN
                 </TableHead>
-                <TableHead className="font-semibold text-black text-left py-2 px-3 border-b w-[10%]">
-                  Borrowed By
-                </TableHead>
+                {role === "Librarian" && (
+                  <TableHead className="font-semibold text-black text-left py-2 px-3 border-b w-[10%]">
+                    Borrowed By
+                  </TableHead>
+                )}
                 <TableHead className="font-semibold text-black text-left py-2 px-3 border-b w-[10%]">
                   Borrowed At
                 </TableHead>
