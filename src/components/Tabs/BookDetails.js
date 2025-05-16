@@ -457,6 +457,18 @@ function BookDetails({
           )}
         </div>
 
+        {/* Borrowed By */}
+        {sourceTab === "borrowed" && role === "Librarian" && (
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-gray-500">
+              Borrowed By
+            </span>
+            <span className="text-base text-gray-800">
+              {selectedBook?.studentId || "No Borrower"}
+            </span>
+          </div>
+        )}
+
         {/* Borrowed At*/}
         {sourceTab === "borrowed" && (
           <div className="flex flex-col">
